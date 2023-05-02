@@ -31,3 +31,17 @@ For example, you want to connect to local 10818 server, you run
 `java -jar client.jar 127.0.0.1 10818`
 
 And when you see the icon and connected info, you connected
+
+## Releases
+See all releases [here](https://github.com/BlueStarrySky1/Tach/releases)
+___
+### 1.0 Snapshot
+Changelog:
+
+-Tach 1.0 Snapshot:
+
+-Multi-thread forwarding
+
+-Command conditions required
+
+[Download 1.0 Snapshot](https://github.com/BlueStarrySky1/Tach/releases/tag/Snapshot)
