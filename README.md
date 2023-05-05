@@ -34,7 +34,9 @@ And when you see the icon and connected info, you connected
 
 ## Releases
 See all releases [here](https://github.com/BlueStarrySky1/Tach/releases)
+
 ___
+
 ### 1.0 Snapshot
 Changelog:
 
