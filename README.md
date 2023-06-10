@@ -1,5 +1,7 @@
 # Tach
 
+[简体中文](https://github.com/BlueStarrySky1/Tach/blob/main/README_zh.md) | [English](https://github.com/BlueStarrySky1/Tach/blob/main/README.md)
+
 ## What is Tach
 [Tach](https://github.com/BlueStarrySky1/Tach) is a Java Powered Multi-thread Chat Room made by [@BlueStarrySky1](https://github.com/BlueStarrySky1)
 
