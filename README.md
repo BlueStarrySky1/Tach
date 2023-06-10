@@ -17,13 +17,17 @@ To Start the server, you need to run this:
 `java -jar server.jar [port]`
 
 Tach Server will bind on the port you give it, default 10818
+
 ___
+
 For example, you want to open the server on port 7777, you need to run
 
 `java -jar server.jar 7777`
 
 And when you see the icon, the server started on port 7777
+
 ___
+
 ### Tach Client
 To Connect to a specific host, you need to run this
 
