@@ -1,103 +1,158 @@
-package com.dqa.tach;
-
-import java.io.*;
-import java.net.*;
-import java.util.*;
 
 
-public class Server {
-    public static List<MyChannel> list=new ArrayList<>();
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Random;
+
+public class server {
+    private static String key = null;
+    private static String initVector = null;
+    static ArrayList<Socket> clientSockets = new ArrayList<>();
+    static ArrayList<String> users = new ArrayList<>();
     public static String icon = " _________  ________  ________  ___  ___     \n|\\___   ___\\\\   __  \\|\\   ____\\|\\  \\|\\  \\    \n\\|___ \\  \\_\\ \\  \\|\\  \\ \\  \\___|\\ \\  \\\\\\  \\   \n     \\ \\  \\ \\ \\   __  \\ \\  \\    \\ \\   __  \\  \n      \\ \\  \\ \\ \\  \\ \\  \\ \\  \\____\\ \\  \\ \\  \\ \n       \\ \\__\\ \\ \\__\\ \\__\\ \\_______\\ \\__\\ \\__\n        \\|__|  \\|__|\\|__|\\|_______|\\|__|\\|__|\n";
-    public static String info = "TACH Core (Server) v1.0 Snapshot\n";
-    public static void main(String[] args) throws Exception {
-        //Create Serversocket object
-        ServerSocket serverSocket = new ServerSocket(Integer.parseInt(args[0]));
-        System.out.println(icon+info+"[Info] Server Bound on port "+args[0]+"\n[Info] Local IP Addr: "+serverSocket.getLocalSocketAddress());
-        while (true){
+    public static String info = "TACH Core (Server) v1.1 Pre-Release\n";
+    public static String ver = "1.1";
+    public static String getRandomString(int length) {
 
-            //Add clients into the list and remind
-            Socket client = serverSocket.accept();
-            System.out.println("[Info] Client "+client.getInetAddress()+" Joined the Server");
-            MyChannel myChannel = new MyChannel(client);
-            list.add(myChannel);
-            new Thread(myChannel).start();
+        String str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+        Random random = new Random();
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < length; ++i) {
+            int number = random.nextInt(str.length());
+            sb.append(str.charAt(number));
+        }
+        return sb.toString();
+    }
+
+    public static void main(String[] args) throws Exception {
+
+        // Customize port
+        int port = args.length > 0 ? Integer.parseInt(args[0]) : 10818;
+        System.out.println(icon+info);
+        System.out.println("Starting server on port " + port);
+        key = getRandomString(16);
+
+        ServerSocket serverSocket = new ServerSocket(port);
+
+        while(true) {
+
+            Socket socket = serverSocket.accept();
+
+
+            ClientHandler clientHandler = new ClientHandler(socket);
+            Thread thread = new Thread(clientHandler);
+            thread.start();
         }
     }
-}
 
-class CloseUtil {
-    public static void CloseAll(Closeable... closeable){
-        for(Closeable c:closeable){
-            if (c != null) {
+    private static class ClientHandler implements Runnable {
+
+        Socket socket;
+        BufferedReader reader;
+        PrintWriter writer;
+
+        String name;
+
+        public ClientHandler(Socket socket) throws Exception {
+
+            this.socket = socket;
+            InputStreamReader inputStreamReader = new InputStreamReader(socket.getInputStream());
+            reader = new BufferedReader(inputStreamReader);
+
+            writer = new PrintWriter(socket.getOutputStream(), true);
+
+            // 获取用户名
+            name = reader.readLine();
+            users.add(name);
+            clientSockets.add(socket);
+            System.out.println("Client "+socket.getRemoteSocketAddress()+" joined, username: "+name);
+            sendUsers();
+        }
+
+        @Override
+        public void run() {
+
+            String message;
+
+            try {
+                while((message = reader.readLine()) != null) {
+
+                    System.out.println("Message Received and Handled：" + message);
+
+                    sendMessage(message);
+                }
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+                users.remove(name);
+                clientSockets.remove(socket);
+                sendUsers();
+            }
+        }
+
+        private void sendUsers() {
+            String userList = "USERLIST";
+            for(String user : users) {
+                userList += "," + user;
+            }
+
+            for(Socket soc : clientSockets) {
                 try {
-                    c.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    PrintWriter writer = new PrintWriter(soc.getOutputStream(), true);
+                    writer.println("/key "+key+"|"+ver);
+
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
                 }
             }
         }
-    }
-}
 
-class MyChannel implements Runnable{
-    private DataInputStream dis;
-    private DataOutputStream dos;
-    private boolean flag=true;
+        private void sendMessage(String message) {
 
-    public MyChannel(Socket socket) {
-        try{
-            dis=new DataInputStream(socket.getInputStream());
-            dos=new DataOutputStream(socket.getOutputStream());
-        }catch (IOException e){
-            flag=false;
-            CloseUtil.CloseAll(dis,dos);
-        }
-    }
-    //Method of Receiving Data
-    private String receive(){
-        String str="";
-        try{
-            str= dis.readUTF();
-            System.out.println("[Msg] Message Received: \""+str+"\"");
-        }catch (IOException e){
-            flag=false;
-            CloseUtil.CloseAll(dis,dos);
-            Server.list.remove(this);
-        }
-        return str;
-    }
-    //Method of Sending Data
-    private void send(String str){
-        try {
-            if (str != null && str.length() != 0) {
-                dos.writeUTF(str);
-                dos.flush();
-                System.out.println("[Info] Message Forwarded");
+
+            String response = null;
+            try {
+                response = message;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-        }catch (Exception exception){
-            flag=false;
-            CloseUtil.CloseAll(dos,dis);
-            Server.list.remove(this);
-        }
-    }
-    //Method of Transforming / Exchanging / Forwarding Data
-    private void sendToOther(){
-        String str=this.receive();
-        List<MyChannel> list = Server.list;
-        for (MyChannel other:list) {
-            if(other==list){
-                continue;//Not send data to myself
-            }
-            //Transforming / Exchanging / Forwarding Data to other clients
-            other.send(str);
-        }
-    }
 
-    @Override
-    public void run() {
-        while (flag){
-            sendToOther();
+            for(Socket soc : clientSockets) {
+                if(soc != socket) {
+                    try {
+                        PrintWriter writer = new PrintWriter(soc.getOutputStream(), true);
+                        writer.println(response);
+                        System.out.println("Forwarded");
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                }
+            }
+        }
+
+
+        public static String encrypt(String sSrc, String sKey) throws Exception {
+            if (sKey == null) {
+                System.err.print("Key is null");
+                return null;
+            }
+            if (sKey.length() != 16) {
+                System.err.print("Key length must be 16 bytes");
+                return null;
+            }
+            byte[] raw = sKey.getBytes("utf-8");
+            SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
+            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");//"算法/模式/补码方式"
+            cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
+            byte[] encrypted = cipher.doFinal(sSrc.getBytes("utf-8"));
+            return Base64.getEncoder().encodeToString(encrypted);//此处使用BASE64做转码功能，同时能起到2次加密的作用。
         }
     }
 }
-
