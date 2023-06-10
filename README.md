@@ -5,8 +5,6 @@
 
 It doesn't has GUI, it can only executed by command prompts
 
-___
-
 ## Tach's Command Prompts
 ### Tach Server
 `[] = not required`
@@ -39,7 +37,7 @@ For example, you want to connect to local 7777 server and use the name 'Tach', y
 
 And when you see the icon and connected info, you have connected
 
-___
+
 
 ## Releases
 See all releases [here](https://github.com/BlueStarrySky1/Tach/releases)
