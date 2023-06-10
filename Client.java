@@ -47,7 +47,7 @@ public class client {
                     while((message = socketReader.readLine()) != null) {
 
                         if (message.startsWith("/key ")) {
-                            key = message.substring(5,22);
+                            key = message.substring(5,21);
                             if (!message.substring(22).equals(ver)){
                                 System.err.println("Error: Not the same version as server");
                                 socket.close();
