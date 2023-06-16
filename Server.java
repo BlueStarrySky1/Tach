@@ -3,6 +3,7 @@
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
@@ -17,8 +18,9 @@ public class server {
     static ArrayList<Socket> clientSockets = new ArrayList<>();
     static ArrayList<String> users = new ArrayList<>();
     public static String icon = " _________  ________  ________  ___  ___     \n|\\___   ___\\\\   __  \\|\\   ____\\|\\  \\|\\  \\    \n\\|___ \\  \\_\\ \\  \\|\\  \\ \\  \\___|\\ \\  \\\\\\  \\   \n     \\ \\  \\ \\ \\   __  \\ \\  \\    \\ \\   __  \\  \n      \\ \\  \\ \\ \\  \\ \\  \\ \\  \\____\\ \\  \\ \\  \\ \n       \\ \\__\\ \\ \\__\\ \\__\\ \\_______\\ \\__\\ \\__\n        \\|__|  \\|__|\\|__|\\|_______|\\|__|\\|__|\n";
-    public static String info = "TACH Core (Server) v1.1 Pre-Release\n";
-    public static String ver = "1.1";
+    public static String info = "TACH Core (Server) v1.2 Release\n";
+    public static String ver = "1.2";
+    public static String lastMsg = null;
     public static String getRandomString(int length) {
 
         String str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -39,7 +41,7 @@ public class server {
         System.out.println(icon+info);
         System.out.println("Starting server on port " + port);
         key = getRandomString(16);
-
+        //System.out.println(key);
         ServerSocket serverSocket = new ServerSocket(port);
 
         while(true) {
@@ -83,12 +85,15 @@ public class server {
             String message;
 
             try {
-                while((message = reader.readLine()) != null) {
 
-                    System.out.println("Message Received and Handled：" + message);
 
-                    sendMessage(message);
-                }
+                    while ((message = reader.readLine()) != null) {
+                        if (!message.equals("/close") && !message.equals("/lastMsg")) {
+                            System.out.println("Message Received and Handled：" + message);
+                            lastMsg = message;
+                        }
+                        sendMessage(message);
+                    }
             } catch (Exception e) {
                 System.out.println(e.getMessage());
                 users.remove(name);
@@ -125,6 +130,23 @@ public class server {
             }
 
             for(Socket soc : clientSockets) {
+                if(message.equals("/close")) {
+                    try {
+                        socket.close();
+                        System.out.println("Socket "+socket.getRemoteSocketAddress()+" Disconnected");
+                        break;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (message.equals("/lastMsg")) {
+                    try {
+                        PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+                        writer.println(lastMsg);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
                 if(soc != socket) {
                     try {
                         PrintWriter writer = new PrintWriter(soc.getOutputStream(), true);
