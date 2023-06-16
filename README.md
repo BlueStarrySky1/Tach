@@ -36,7 +36,17 @@ To Connect to a specific host, you need to run this
 The client will connect to the addr:port you give it, default localhost:10818
 
 The client will also use the username you give, default Anonymous
+
+`java -jar client.jar [{addr} {port} {username} [-o] {msg}]`
+
+This is a new feature, by changing the msg, the client will join, send, and then quit the server, this is called one-time send.
+
+`java -jar client.jar [{addr} {port} {username} [-l | -r] [fileDir]]`
+
+This is also a new feature, "-l" receives the last message, if provided, it will write in the file. "-r" will keep receiving message and write it in the file, default .\receivedData.log.
+
 ___
+
 For example, you want to connect to local 7777 server and use the name 'Tach', you run
 
 `java -jar client.jar 127.0.0.1 7777 Tach`
@@ -47,6 +57,21 @@ And when you see the icon and connected info, you have connected
 
 ## Releases
 See all releases [here](https://github.com/BlueStarrySky1/Tach/releases)
+
+___
+
+### 1.2 Release
+Changelog:
+
+-Three new conditions has been added:
+
+[-o {msg}] - connect to the server, send the message and quit.
+
+[-l [file]] - receive the last message, if you give a file name, it will write the message to the file (default .\receivedData.log).
+
+[-r [file]] - receiver, keep receiving message and write in the file (default .\receivedData.log).
+
+[Download 1.2 Release](https://github.com/BlueStarrySky1/Tach/releases/tag/Release)
 
 ___
 
