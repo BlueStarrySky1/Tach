@@ -10,8 +10,8 @@ public class client {
     private static String key = null;
     private static String initVector = null;
     public static String icon = " _________  ________  ________  ___  ___     \n|\\___   ___\\\\   __  \\|\\   ____\\|\\  \\|\\  \\    \n\\|___ \\  \\_\\ \\  \\|\\  \\ \\  \\___|\\ \\  \\\\\\  \\   \n     \\ \\  \\ \\ \\   __  \\ \\  \\    \\ \\   __  \\  \n      \\ \\  \\ \\ \\  \\ \\  \\ \\  \\____\\ \\  \\ \\  \\ \n       \\ \\__\\ \\ \\__\\ \\__\\ \\_______\\ \\__\\ \\__\n        \\|__|  \\|__|\\|__|\\|_______|\\|__|\\|__|\n";
-    public static String info = "TACH Core (Client) v1.2 Release\n";
-    public static String ver = "1.2";
+    public static String info = "TACH Core (Client) v1.3 Release\n";
+    public static String ver = "1.3";
     public static String sendWord = null;
     public static Boolean isConnected = false;
     public static Boolean receiveLast = false;
@@ -19,6 +19,7 @@ public class client {
     public static Boolean receiver = false;
     public static Boolean silent = false;
     public static void main(String[] args) throws Exception {
+        //customization
         silent = args.length > 3 ? true : false;
         if (args.length > 4) {
             sendWord = args[3].equals("-o") ? args[4] : null;
@@ -26,11 +27,10 @@ public class client {
         receiveLast = args.length > 3 && args[3].equals("-l") ? true : false;
         receiver = args.length > 3 && args[3].equals("-r") ? true : false;
         fileDir = args.length > 4 && receiver || receiveLast ? args[4] : fileDir;
-        // Customize port, addr and username
         String serverAddress = args.length > 0 ? args[0] : "localhost";
         int serverPort = args.length > 1 ? Integer.parseInt(args[1]) : 10818;
         String userName = args.length > 2 ? args[2] : "Anonymous";
-
+        //open socket
         Socket socket = new Socket(serverAddress, serverPort);
         if (!silent) {
             System.out.println(icon + info);
@@ -45,8 +45,9 @@ public class client {
 
         InputStreamReader inputStreamReader = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(inputStreamReader);
-
+        //thread
         Thread thread = new Thread(new Runnable() {
+            //receive
             @Override
             public void run() {
                 String message;
@@ -69,7 +70,10 @@ public class client {
                                 socket.close();
                                 System.exit(0);
                                 break;
+                            }else {
+                                writer.println("/ready");
                             }
+
                             if (isConnected == false) {
                                 if (!silent) {
                                     System.out.println("Connect to server " + socket.getRemoteSocketAddress());
@@ -84,7 +88,14 @@ public class client {
                                 isConnected = true;
                             }
                         }else if (!message.equals("/lastMsg") && !message.equals("/close")){
-                            String decryptedMsg = decrypt(message, key);
+                            //history
+                            String decryptedMsg = null;
+                            if (message.substring(0,8).equals("/history")) {
+                                decryptedMsg = "History | "+decrypt(message.substring(8), key);
+                            }else {
+                                decryptedMsg = decrypt(message, key);
+                            }
+
                             if (!receiver) {
                                 if (args.length > 4 && receiver || receiveLast) {
                                     file = new File(fileDir);
@@ -93,6 +104,7 @@ public class client {
                                     }
                                     System.out.println("Writen");
                                 }else {
+
                                     // decrypt
                                     System.out.println(decryptedMsg);
                                 }
@@ -168,7 +180,7 @@ public class client {
 
 
 
-
+    //encrypt
     public static String encrypt(String sSrc, String sKey) throws Exception {
         if (sKey == null) {
             System.err.println("Key is null");
