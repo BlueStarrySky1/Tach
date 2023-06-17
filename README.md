@@ -18,11 +18,17 @@ To Start the server, you need to run this:
 
 Tach Server will bind on the port you give it, default 10818
 
+`java -jar server.jar [{port} [{-h} {num}]]`
+
+By changing the number, you can control how many chat histories the server will save, default 30, 0 for no chat histories.
+
+When a new client joins the server, it will receive chat histories and show like this: "History | Tach: Hi"
+
 ___
 
-For example, you want to open the server on port 7777, you need to run
+For example, you want to open the server on port 7777, and save 50 chats, you need to run
 
-`java -jar server.jar 7777`
+`java -jar server.jar 7777 -h 50`
 
 And when you see the icon, the server started on port 7777
 
@@ -45,58 +51,17 @@ This is a new feature, by changing the msg, the client will join, send, and then
 
 This is also a new feature, "-l" receives the last message, if provided, it will write in the file. "-r" will keep receiving message and write it in the file, default .\receivedData.log.
 
+*Remind: -o, -l, and -r are silent conditions, as you run them, they won't show any icons or infos.*
+
 ___
 
 For example, you want to connect to local 7777 server and use the name 'Tach', you run
 
 `java -jar client.jar 127.0.0.1 7777 Tach`
 
-And when you see the icon and connected info, you have connected
+And when you see the icon and connected info, you have connected.
 
-
+___
 
 ## Releases
 See all releases [here](https://github.com/BlueStarrySky1/Tach/releases)
-
-___
-
-### 1.2 Release
-Changelog:
-
--Three new conditions has been added:
-
-[-o {msg}] - connect to the server, send the message and quit.
-
-[-l [file]] - receive the last message, if you give a file name, it will write the message to the file (default .\receivedData.log).
-
-[-r [file]] - receiver, keep receiving message and write in the file (default .\receivedData.log).
-
-[Download 1.2 Release](https://github.com/BlueStarrySky1/Tach/releases/tag/Release)
-
-___
-
-### 1.1 Pre Release
-Changelog:
-
--Tach 1.1 Pre-Release:
-
--Add AES encrypt function
-
--Add username function
-
--Add version check function
-
-[Download 1.1 Pre-Release](https://github.com/BlueStarrySky1/Tach/releases/tag/Pre-Release)
-
-___
-
-### 1.0 Snapshot
-Changelog:
-
--Tach 1.0 Snapshot:
-
--Multi-thread forwarding
-
--Command conditions required
-
-[Download 1.0 Snapshot](https://github.com/BlueStarrySky1/Tach/releases/tag/Snapshot)

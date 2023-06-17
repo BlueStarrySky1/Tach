@@ -18,11 +18,17 @@ Tach 没有 GUI，您可以使用命令行
 
 Tach 服务器会在指定的端口开启（默认10818）
 
+`java -jar server.jar [{端口} [{-h} {数量}]]`
+
+通过改变数量就可以控制服务器保存的聊天记录数量，默认30个，输入0可以禁用此功能。
+
+每当有新客户端加入时，它会接收到聊天记录，会这样显示：“History | Tach: 你好朋友！”
+
 ___
 
-例子：将服务器开在 7777 端口
+例子：将服务器开在 7777 端口，并保存50个消息
 
-`java -jar server.jar 7777`
+`java -jar server.jar 7777 -h 50`
 
 看见 Tach 图标后，服务器开启成功
 
@@ -45,6 +51,8 @@ Tach 客户端同样也会使用指定的用户名（默认 Anonymous）
 
 这还是新功能，-l 将获取最后一条消息，如果有提供，客户端将把消息写入文件。-r 会一直把获取到的消息写入文件，默认路径为运行目录下receivedData.log文件。
 
+*注意： -o，-l，和-r都属于静默参数，使用时不会出现 Tach 图标与连接信息。*
+
 ___
 
 例子：以用户 “Tach” 的身份连接到 127.0.0.1:7777 服务器
@@ -53,50 +61,7 @@ ___
 
 看见 Tach 图标与连接信息后，连接成功
 
-
+___
 
 ## 版本
 所有版本在 [这里](https://github.com/BlueStarrySky1/Tach/releases)
-
-___
-
-### 1.2 Release
-日志:
-
--三个新的参数:
-
-[-o {消息}] - 连接，发送，最后断开。
-
-[-l [文件路径]] - 接收最后一条消息，如果提供，将写入文件（默认路径为运行目录下receivedData.log文件）。
-
-[-r [文件路径]] - 一直将获取的消息写入文件（默认路径为运行目录下receivedData.log文件）。
-
-[下载](https://github.com/BlueStarrySky1/Tach/releases/tag/Release)
-
-___
-
-### 1.1 Pre Release
-日志:
-
--Tach 1.1 Pre-Release:
-
--增加AES加密功能
-
--增加用户名功能
-
--增加版本核对功能
-
-[下载](https://github.com/BlueStarrySky1/Tach/releases/tag/Pre-Release)
-
-___
-
-### 1.0 Snapshot
-日志:
-
--Tach 1.0 Snapshot:
-
--增加多线程处理
-
--使用命令行
-
-[下载](https://github.com/BlueStarrySky1/Tach/releases/tag/Snapshot)
