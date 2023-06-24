@@ -3,7 +3,7 @@
 [简体中文](https://github.com/BlueStarrySky1/Tach/blob/main/README_zh.md) | [English](https://github.com/BlueStarrySky1/Tach/blob/main/README.md)
 
 ## What is Tach
-[Tach](https://github.com/BlueStarrySky1/Tach) is a Java Powered Multi-thread Chat Room made by [@BlueStarrySky1](https://github.com/BlueStarrySky1)
+[Tach](https://github.com/BlueStarrySky1/Tach) is a Java Powered Multi-thread Chat Room made by [@PaperCake-Studio](https://github.com/PaperCake-Studio)
 
 It doesn't has GUI, it can only executed by command prompts
 
