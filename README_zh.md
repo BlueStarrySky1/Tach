@@ -3,7 +3,7 @@
 [简体中文](https://github.com/BlueStarrySky1/Tach/blob/main/README_zh.md) | [English](https://github.com/BlueStarrySky1/Tach/blob/main/README.md)
 
 ## What is Tach
-[Tach](https://github.com/BlueStarrySky1/Tach) 是一个Java多线程聊天室，由 [@BlueStarrySky1](https://github.com/BlueStarrySky1) 制作
+[Tach](https://github.com/BlueStarrySky1/Tach) 是一个Java多线程聊天室，由 [@PaperCake-Studio](https://github.com/PaperCake-Studio) 制作
 
 Tach 没有 GUI，您可以使用命令行
 
