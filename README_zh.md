@@ -2,7 +2,13 @@
 
 [简体中文](https://github.com/BlueStarrySky1/Tach/blob/main/README_zh.md) | [English](https://github.com/BlueStarrySky1/Tach/blob/main/README.md)
 
-## What is Tach
+- [简介](#简介)
+- [Tach 命令行参数](#tach-命令行参数)
+  - [Tach 服务器](#tach-服务器)
+  - [Tach 客户端](#tach-客户端)
+- [版本](#版本)
+
+## 简介
 [Tach](https://github.com/BlueStarrySky1/Tach) 是一个Java多线程聊天室，由 [@PaperCake-Studio](https://github.com/PaperCake-Studio) 制作
 
 Tach 没有 GUI，您可以使用命令行
