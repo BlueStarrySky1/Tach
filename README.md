@@ -1,6 +1,6 @@
 # Tach
 
-[简体中文](https://github.com/BlueStarrySky1/Tach/blob/main/README_zh.md) | [English](https://github.com/BlueStarrySky1/Tach/blob/main/README.md)
+[简体中文](https://github.com/PaperCake-Studio/Tach/blob/main/README_zh.md) | [English](https://github.com/PaperCake-Studio/Tach/blob/main/README.md)
 
 - [What is Tach](#what-is-tach)
 - [Tach's Command Prompts](#tachs-command-prompts)
@@ -9,7 +9,7 @@
 - [Releases](#releases)
 
 ## What is Tach
-[Tach](https://github.com/BlueStarrySky1/Tach) is a Java Powered Multi-thread Chat Room made by [@PaperCake-Studio](https://github.com/PaperCake-Studio)
+[Tach](https://github.com/PaperCake-Studio/Tach) is a Java Powered Multi-thread Chat Room made by [@PaperCake-Studio](https://github.com/PaperCake-Studio)
 
 It doesn't has GUI, it can only executed by command prompts
 
@@ -84,4 +84,4 @@ And when you see the icon and connected info, you have connected.
 ___
 
 ## Releases
-See all releases [here](https://github.com/BlueStarrySky1/Tach/releases)
+See all releases [here](https://github.com/PaperCake-Studio/Tach/releases)
