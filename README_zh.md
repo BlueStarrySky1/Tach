@@ -1,6 +1,6 @@
 # Tach
 
-[简体中文](https://github.com/BlueStarrySky1/Tach/blob/main/README_zh.md) | [English](https://github.com/BlueStarrySky1/Tach/blob/main/README.md)
+[简体中文](https://github.com/PaperCake-Studio/Tach/blob/main/README_zh.md) | [English](https://github.com/PaperCake-Studio/Tach/blob/main/README.md)
 
 - [简介](#简介)
 - [Tach 命令行参数](#tach-命令行参数)
@@ -9,7 +9,7 @@
 - [版本](#版本)
 
 ## 简介
-[Tach](https://github.com/BlueStarrySky1/Tach) 是一个Java多线程聊天室，由 [@PaperCake-Studio](https://github.com/PaperCake-Studio) 制作
+[Tach](https://github.com/PaperCake-Studio/Tach) 是一个Java多线程聊天室，由 [@PaperCake-Studio](https://github.com/PaperCake-Studio) 制作
 
 Tach 没有 GUI，您可以使用命令行
 
