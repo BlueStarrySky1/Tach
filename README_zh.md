@@ -14,11 +14,15 @@ Tach 没有 GUI，您可以使用命令行
 
 想开一个 Tach 聊天服务器，您需要查看以下参数:
 
-`java -jar server.jar [端口]`
+```bash
+java -jar server.jar [端口]
+```
 
 Tach 服务器会在指定的端口开启（默认10818）
 
-`java -jar server.jar [{端口} [{-h} {数量}]]`
+```bash
+java -jar server.jar [{端口} [{-h} {数量}]]
+```
 
 通过改变数量就可以控制服务器保存的聊天记录数量，默认30个，输入0可以禁用此功能。
 
@@ -28,7 +32,9 @@ ___
 
 例子：将服务器开在 7777 端口，并保存50个消息
 
-`java -jar server.jar 7777 -h 50`
+```bash
+java -jar server.jar 7777 -h 50
+```
 
 看见 Tach 图标后，服务器开启成功
 
@@ -37,17 +43,23 @@ ___
 ### Tach 客户端
 想连接到指定服务器，您需要查看以下参数
 
-`java -jar client.jar [地址] [端口] [用户名]`
+```bash
+java -jar client.jar [地址] [端口] [用户名]
+```
 
 Tach 客户端会连接到指定的地址与端口（默认连接 localhost:10818）
 
 Tach 客户端同样也会使用指定的用户名（默认 Anonymous）
 
-`java -jar client.jar [{地址} {端口} {用户名} [-o] {要发送的消息}]`
+```bash
+java -jar client.jar [{地址} {端口} {用户名} [-o] {要发送的消息}]
+```
 
 这是一项新功能，改变要发送的消息，客户端会连接，发送，最后断开连接，这叫“一次发送”
 
-`java -jar client.jar [{地址} {端口} {用户名} [-l | -r] [文件绝对路径]]`
+```bash
+java -jar client.jar [{地址} {端口} {用户名} [-l | -r] [文件绝对路径]]
+```
 
 这还是新功能，-l 将获取最后一条消息，如果有提供，客户端将把消息写入文件。-r 会一直把获取到的消息写入文件，默认路径为运行目录下receivedData.log文件。
 
@@ -57,7 +69,9 @@ ___
 
 例子：以用户 “Tach” 的身份连接到 127.0.0.1:7777 服务器
 
-`java -jar client.jar 127.0.0.1 7777 Tach`
+```bash
+java -jar client.jar 127.0.0.1 7777 Tach
+```
 
 看见 Tach 图标与连接信息后，连接成功
 
