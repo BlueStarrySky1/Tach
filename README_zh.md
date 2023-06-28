@@ -84,4 +84,4 @@ java -jar client.jar 127.0.0.1 7777 Tach
 ___
 
 ## 版本
-所有版本在 [这里](https://github.com/BlueStarrySky1/Tach/releases)
+所有版本在 [这里](https://github.com/PaperCake-Studio/Tach/releases)
