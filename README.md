@@ -1,6 +1,6 @@
 # Tach
 
-[简体中文](https://github.com/PaperCake-Studio/Tach/blob/main/README_zh.md) | [English](https://github.com/PaperCake-Studio/Tach/blob/main/README.md)
+[简体中文](https://github.com/PaperCake-Studio/Tach/blob/main/README_zh.md) | [English](https://github.com/PaperCake-Studio/Tach/blob/main/README.md) | [繁体中文](https://github.com/PaperCake-Studio/Tach/blob/main/README_zht.md)
 
 - [Tach](#tach)
   - [What is Tach](#what-is-tach)
