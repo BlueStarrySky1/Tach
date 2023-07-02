@@ -1,11 +1,15 @@
 
 import jdk.jfr.events.FileReadEvent;
-
 import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.net.Socket;
 import javax.crypto.Cipher;
+import java.nio.charset.StandardCharsets;
+import java.security.*;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
+import java.util.Properties;
+
 public class client {
     private static String key = null;
     private static String initVector = null;
@@ -15,25 +19,49 @@ public class client {
     public static String sendWord = null;
     public static Boolean isConnected = false;
     public static Boolean receiveLast = false;
-    public static String fileDir = ".\\receivedData.log";
+    public static String fileDir = "";
     public static Boolean receiver = false;
     public static Boolean silent = false;
+    public static Properties langKeyConf = null;
     public static void main(String[] args) throws Exception {
+        KeyPair keyPair = getKeyPair();
+        PublicKey publicKey = getPublicKey(keyPair);
+        PrivateKey privateKey = getPrivateKey(keyPair);
+        //read config
+        String configPath = args.length > 1 && args[0].equals("-c") ? args[1] : "./clientConfig.properties";
+        Properties config = new Properties();
+        BufferedReader configBR = new BufferedReader(new FileReader(configPath));
+        config.load(configBR);
         //customization
-        silent = args.length > 3 ? true : false;
-        if (args.length > 4) {
-            sendWord = args[3].equals("-o") ? args[4] : null;
+        silent = args.length > 2 ? true : Boolean.valueOf(config.getProperty("silent"));
+        if (args.length > 3) {
+            sendWord = args[2].equals("-o") ? args[3] : null;
         }
-        receiveLast = args.length > 3 && args[3].equals("-l") ? true : false;
-        receiver = args.length > 3 && args[3].equals("-r") ? true : false;
-        fileDir = args.length > 4 && receiver || receiveLast ? args[4] : fileDir;
-        String serverAddress = args.length > 0 ? args[0] : "localhost";
-        int serverPort = args.length > 1 ? Integer.parseInt(args[1]) : 10818;
-        String userName = args.length > 2 ? args[2] : "Anonymous";
+        receiveLast = args.length > 2 && args[2].equals("-l") ? true : false;
+        receiver = args.length > 2 && args[2].equals("-r") ? true : false;
+        if (args.length > 3 && receiveLast || receiver) { fileDir = config.getProperty("fileDir").isEmpty() ? fileDir : config.getProperty("fileDir"); }
+
+        String serverAddress = config.getProperty("serverAddr");
+        int serverPort = Integer.parseInt(config.getProperty("serverPort"));
+        String userName = config.getProperty("username");
+        //read language file path
+        Properties langConf = new Properties();
+        BufferedReader langBR = new BufferedReader(new FileReader("./lang/lang.properties"));
+        langConf.load(langBR);
+        String lang = config.getProperty("lang");
+        String langFile = langConf.getProperty(config.getProperty("lang"));
+        langBR.close();
+        configBR.close();
+        //read language file
+        langKeyConf = new Properties();
+        BufferedReader langKeyBR = new BufferedReader(new FileReader(langFile));
+        langKeyConf.load(langKeyBR);
+
         //open socket
         Socket socket = new Socket(serverAddress, serverPort);
         if (!silent) {
-            System.out.println(icon + info);
+            System.out.println(icon);
+            System.out.println(langKeyConf.getProperty("cinfo") + " " + ver + " " + langKeyConf.getProperty("release")+" " + langKeyConf.getProperty("lang"));
         }
         // Get username
 
@@ -42,7 +70,8 @@ public class client {
 
         PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
         writer.println(userName);
-
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+        objectOutputStream.writeObject(publicKey);
         InputStreamReader inputStreamReader = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(inputStreamReader);
         //thread
@@ -58,13 +87,13 @@ public class client {
 
 
 
+                    //System.out.println(publicKey);
                     while((message = socketReader.readLine()) != null) {
                         File file = null;
-                        if (message.startsWith("/key ")) {
-                            key = message.substring(5,21);
-                            if (!message.substring(22).equals(ver)){
+                        if (message.startsWith("/ver")) {
+                            if (!message.substring(4).equals(ver)){
                                 if (!silent) {
-                                    System.err.println("Error: Not the same version!\nClient Version: " + ver + "\nServer Version: " + message.substring(22));
+                                    System.err.println(langKeyConf.getProperty("cerror1") + langKeyConf.getProperty("cerror1_2") + ver + "\n"+langKeyConf.getProperty("cerror1_3") + message.substring(22));
                                 }
                                 writer.println("/close");
                                 socket.close();
@@ -73,10 +102,12 @@ public class client {
                             }else {
                                 writer.println("/ready");
                             }
+                        }else if (message.startsWith("/key")) {
+                            key = rsaDecrypt(message.substring(4), privateKey);
 
                             if (isConnected == false) {
                                 if (!silent) {
-                                    System.out.println("Connect to server " + socket.getRemoteSocketAddress());
+                                    System.out.println(langKeyConf.getProperty("cconnect") + socket.getRemoteSocketAddress());
                                 }
                                 if (receiver || args.length > 4 && receiveLast) {
                                     file = new File(fileDir);
@@ -90,9 +121,12 @@ public class client {
                         }else if (!message.equals("/lastMsg") && !message.equals("/close")){
                             //history
                             String decryptedMsg = null;
-                            if (message.substring(0,8).equals("/history")) {
-                                decryptedMsg = "History | "+decrypt(message.substring(8), key);
+                            if (message.equals("/history")) {
+                                String decryptHistoryMsg = decrypt(socketReader.readLine(), key);
+                                System.out.println(langKeyConf.getProperty("chistory") + " | " + decryptHistoryMsg);
+                                decryptedMsg = langKeyConf.getProperty("chistory") + " | " + decryptHistoryMsg;
                             }else {
+                                System.out.println(decrypt(message, key));
                                 decryptedMsg = decrypt(message, key);
                             }
 
@@ -102,17 +136,16 @@ public class client {
                                     try (FileWriter fileWriter = new FileWriter(file, true)) {
                                         fileWriter.append(decryptedMsg+"\n");
                                     }
-                                    System.out.println("Writen");
+                                    System.out.println(langKeyConf.getProperty("cwriten"));
                                 }else {
 
-                                    // decrypt
-                                    System.out.println(decryptedMsg);
+
                                 }
 
                             }else {
                                 file = new File(fileDir);
 
-                                System.out.println("Writen");
+                                System.out.println(langKeyConf.getProperty("cwriten"));
 
                                 try (FileWriter fileWriter = new FileWriter(file, true)) {
                                     fileWriter.append(decryptedMsg+"\n");
@@ -146,7 +179,7 @@ public class client {
                     //encrypt
                     String encryptedMessage = encrypt(userName + ": " + sendWord, key);
                     writer.println(encryptedMessage);
-                    System.out.println("Sent");
+                    System.out.println(langKeyConf.getProperty("csent"));
                     writer.println("/close");
                     System.exit(0);
                 } else {
@@ -181,53 +214,86 @@ public class client {
 
 
     //encrypt
-    public static String encrypt(String sSrc, String sKey) throws Exception {
-        if (sKey == null) {
-            System.err.println("Key is null");
-            return null;
-        }
-
-        if (sKey.length() != 16) {
-            System.err.println("Key length must be 16 bytes");
-            return null;
-        }
-        byte[] raw = sKey.getBytes("utf-8");
-        SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
-        Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-        cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
-        byte[] encrypted = cipher.doFinal(sSrc.getBytes("utf-8"));
-        return Base64.getEncoder().encodeToString(encrypted);
+    public static String encrypt(String plaintext, String key) throws Exception {
+        String AES_ALGORITHM = "AES";
+        SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), AES_ALGORITHM);
+        Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+        byte[] encryptedBytes = cipher.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
+        return Base64.getEncoder().encodeToString(encryptedBytes);
     }
 
     // decrypt
-    public static String decrypt(String sSrc, String sKey) throws Exception {
-        try {
+    public static String decrypt(String ciphertext, String key) throws Exception {
+        String AES_ALGORITHM = "AES";
+        SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), AES_ALGORITHM);
+        Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
+        cipher.init(Cipher.DECRYPT_MODE, secretKey);
+        byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(ciphertext));
+        return new String(decryptedBytes, StandardCharsets.UTF_8);
+    }
 
-            if (sKey == null) {
-                System.err.println("Key is null");
-                return null;
-            }
+    //Get Key Pair
+    public static KeyPair getKeyPair() throws Exception {
+        String ALGORITHM = "RSA";
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(ALGORITHM);
+        keyPairGenerator.initialize(1024);
+        KeyPair keyPair = keyPairGenerator.generateKeyPair();
+        return keyPair;
+    }
 
-            if (sKey.length() != 16) {
-                System.err.println("Key length must be 16 bytes");
-                return null;
+    //Get Public Key
+    public static PublicKey getPublicKey(KeyPair keyPair) {
+        PublicKey publicKey = keyPair.getPublic();
+        return publicKey;
+    }
+
+    //Get Private Key
+    public static PrivateKey getPrivateKey(KeyPair keyPair) {
+        PrivateKey privateKey = keyPair.getPrivate();
+        return privateKey;
+    }
+
+    //Encrypt By RSA
+    public static String rsaEncrypt(String originalMsg, Key key) throws Exception {
+        int MAX_ENCRYPT_BLOCK = 117;
+        String ALGORITHM = "RSA";
+        String UTF8 = StandardCharsets.UTF_8.name();
+        Cipher cipher = Cipher.getInstance(ALGORITHM);
+        cipher.init(Cipher.ENCRYPT_MODE, key);
+        byte[] bytes = doCodec(cipher, originalMsg.getBytes(UTF8), MAX_ENCRYPT_BLOCK);
+        return Base64.getEncoder().encodeToString(bytes);
+    }
+
+    //Decrypt By RSA
+    public static String rsaDecrypt(String encryptedMsg, Key key) throws Exception {
+        int MAX_DECRYPT_BLOCK = 128;
+        String ALGORITHM = "RSA";
+        String UTF8 = StandardCharsets.UTF_8.name();
+        byte[] decodeMsg = Base64.getDecoder().decode(encryptedMsg);
+        Cipher cipher = Cipher.getInstance(ALGORITHM);
+        cipher.init(Cipher.DECRYPT_MODE, key);
+        byte[] decryptedBytes = doCodec(cipher, decodeMsg, MAX_DECRYPT_BLOCK);
+        return new String(decryptedBytes);
+    }
+
+    public static byte[] doCodec(Cipher cipher, byte[] cont, int maxBlockSize) throws Exception {
+        int contLength = cont.length;
+        int offset = 0;
+        byte[] temp;
+        int i = 0;
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        while ((contLength - offset) > 0) {
+            if ((contLength - offset) > maxBlockSize) {
+                temp = cipher.doFinal(cont, offset, maxBlockSize);
+            } else {
+                temp = cipher.doFinal(cont, offset, contLength - offset);
             }
-            byte[] raw = sKey.getBytes("utf-8");
-            SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
-            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-            cipher.init(Cipher.DECRYPT_MODE, skeySpec);
-            byte[] encrypted1 = Base64.getDecoder().decode(sSrc);//first base64
-            try {
-                byte[] original = cipher.doFinal(encrypted1);
-                String originalString = new String(original,"utf-8");
-                return originalString;
-            } catch (Exception e) {
-                System.out.println(e.toString());
-                return null;
-            }
-        } catch (Exception ex) {
-            System.out.println(ex.toString());
-            return null;
+            byteArrayOutputStream.write(temp,0,temp.length);
+            i++;
+            offset = i * maxBlockSize;
         }
+        byte[] bytes = byteArrayOutputStream.toByteArray();
+        return bytes;
     }
 }

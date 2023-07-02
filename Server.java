@@ -1,17 +1,16 @@
 
 
 import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.Random;
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
+import java.security.PublicKey;
+import java.util.*;
 
 public class server {
     private static String key = null;
@@ -25,6 +24,7 @@ public class server {
     public static Boolean chatHistory = true;
     public static Integer historyNum = 30;
     public static List<String> historyList = new ArrayList<>();
+    public static Properties langKeyConf = null;
     //key generation
     public static String getRandomString(int length) {
 
@@ -39,14 +39,35 @@ public class server {
         return sb.toString();
     }
 
+
     public static void main(String[] args) throws Exception {
-        //customization
-        historyNum = args.length > 2 && args[1].equals("-h") ? Integer.parseInt(args[2]) : 30;
+        //read config
+        String configPath = args.length > 1 && args[0].equals("-c") ? args[1] : "./config.properties";
+        Properties config = new Properties();
+        BufferedReader configBR = new BufferedReader(new FileReader(configPath));
+        config.load(configBR);
+        int port = config.getProperty("port") != null ? Integer.parseInt(config.getProperty("port")) : 10818;
+        historyNum = config.getProperty("historyNum") != null ? Integer.parseInt(config.getProperty("historyNum")) : 30;
         chatHistory = historyNum.equals(0) ? false : true;
-        int port = args.length > 0 ? Integer.parseInt(args[0]) : 10818;
+        //read language file path
+        Properties langConf = new Properties();
+        BufferedReader langBR = new BufferedReader(new FileReader("./lang/lang.properties"));
+        langConf.load(langBR);
+        String lang = config.getProperty("lang");
+        String langFile = langConf.getProperty(config.getProperty("lang"));
+        langBR.close();
+        configBR.close();
+        //read language file
+        langKeyConf = new Properties();
+        BufferedReader langKeyBR = new BufferedReader(new FileReader(langFile));
+        langKeyConf.load(langKeyBR);
+
         //info output
-        System.out.println(icon+info);
-        System.out.println("Starting server on port " + port);
+        System.out.println(icon);
+
+        System.out.println(langKeyConf.getProperty("info")+" "+ver+" "+langKeyConf.getProperty("release")+" "+langKeyConf.getProperty("lang"));
+
+        System.out.println(langKeyConf.getProperty("serverPort")+port);
         //gene key
         key = getRandomString(16);
         //System.out.println(key);
@@ -83,7 +104,12 @@ public class server {
             name = reader.readLine();
             users.add(name);
             clientSockets.add(socket);
-            System.out.println("Client "+socket.getRemoteSocketAddress()+" joined, username: "+name);
+            System.out.println(langKeyConf.getProperty("client")+" "+socket.getRemoteSocketAddress()+" "+langKeyConf.getProperty("clientJoin")+name);
+            ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
+            PublicKey publicKey = (PublicKey) objectInputStream.readObject();
+            //System.out.println(publicKey);
+            writer.println("/key"+rsaEncrypt(key, publicKey));
+            writer.println("/ver"+ver);
             sendUsers();
         }
 
@@ -98,9 +124,11 @@ public class server {
 
                     while ((message = reader.readLine()) != null) {
                         if (!message.equals("/close") && !message.equals("/lastMsg") && !message.equals("/ready")) {
-                            System.out.println("Message Received and Handled：" + message);
+                            System.out.println(langKeyConf.getProperty("messageRecv") + message);
                             lastMsg = message;
-                            if(chatHistory) { chatHistory(message); }
+                            if(chatHistory) {
+                                chatHistory(message);
+                            }
 
                         }
                         sendMessage(message);
@@ -123,7 +151,7 @@ public class server {
             for(Socket soc : clientSockets) {
                 try {
                     PrintWriter writer = new PrintWriter(soc.getOutputStream(), true);
-                    writer.println("/key "+key+"|"+ver);
+
                     //Thread.sleep(1000);
                     //sendChatHistory();
                 } catch (Exception e) {
@@ -141,14 +169,15 @@ public class server {
                 historyList.add(message);
 
             }
-            //System.out.println(historyList);
+
         }
 
         //send history
         private void sendChatHistory() {
             int num = historyList.size() < historyNum ? historyList.size() : historyNum;
             for (int i = 0; i < num; i++) {
-                writer.println("/history"+historyList.get(i));
+                writer.println("/history");
+                writer.println(historyList.get(i));
             }
 
         }
@@ -168,7 +197,7 @@ public class server {
                 if(message.equals("/close")) {
                     try {
                         socket.close();
-                        System.out.println("Socket "+socket.getRemoteSocketAddress()+" Disconnected");
+                        System.out.println(langKeyConf.getProperty("client")+" "+socket.getRemoteSocketAddress()+" "+langKeyConf.getProperty("disconnect"));
                         clientReady = false;
                         break;
                     } catch (IOException e) {
@@ -192,7 +221,7 @@ public class server {
                     try {
                         PrintWriter writer = new PrintWriter(soc.getOutputStream(), true);
                         writer.println(response);
-                        System.out.println("Forwarded");
+                        System.out.println(langKeyConf.getProperty("forwarded"));
                     } catch (Exception e) {
                         System.out.println(e.getMessage());
                     }
@@ -201,21 +230,44 @@ public class server {
         }
 
         //encrypt
-        public static String encrypt(String sSrc, String sKey) throws Exception {
-            if (sKey == null) {
-                System.err.print("Key is null");
-                return null;
+        public static String encrypt(String plaintext, String key) throws Exception {
+            String AES_ALGORITHM = "AES";
+            SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), AES_ALGORITHM);
+            Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+            byte[] encryptedBytes = cipher.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(encryptedBytes);
+        }
+
+        //Encrypt By RSA
+        public static String rsaEncrypt(String originalMsg, Key key) throws Exception {
+            int MAX_ENCRYPT_BLOCK = 117;
+            String ALGORITHM = "RSA";
+            String UTF8 = StandardCharsets.UTF_8.name();
+            Cipher cipher = Cipher.getInstance(ALGORITHM);
+            cipher.init(Cipher.ENCRYPT_MODE, key);
+            byte[] bytes = doCodec(cipher, originalMsg.getBytes(UTF8), MAX_ENCRYPT_BLOCK);
+            return Base64.getEncoder().encodeToString(bytes);
+        }
+
+        public static byte[] doCodec(Cipher cipher, byte[] cont, int maxBlockSize) throws Exception {
+            int contLength = cont.length;
+            int offset = 0;
+            byte[] temp;
+            int i = 0;
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            while ((contLength - offset) > 0) {
+                if ((contLength - offset) > maxBlockSize) {
+                    temp = cipher.doFinal(cont, offset, maxBlockSize);
+                } else {
+                    temp = cipher.doFinal(cont, offset, contLength - offset);
+                }
+                byteArrayOutputStream.write(temp,0,temp.length);
+                i++;
+                offset = i * maxBlockSize;
             }
-            if (sKey.length() != 16) {
-                System.err.print("Key length must be 16 bytes");
-                return null;
-            }
-            byte[] raw = sKey.getBytes("utf-8");
-            SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
-            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-            cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
-            byte[] encrypted = cipher.doFinal(sSrc.getBytes("utf-8"));
-            return Base64.getEncoder().encodeToString(encrypted);
+            byte[] bytes = byteArrayOutputStream.toByteArray();
+            return bytes;
         }
     }
 }
